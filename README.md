@@ -267,7 +267,267 @@ cd backend
 cd ..
 ```
 
-## 🚀 Executar o Projeto
+## � Executar com Docker (Recomendado)
+
+A maneira mais rápida de executar o projeto completo é usando Docker Compose, que configura automaticamente todos os serviços necessários.
+
+### Pré-requisitos Docker
+- Docker 20+ ([Download](https://www.docker.com/get-started))
+- Docker Compose 2+ (geralmente incluído no Docker Desktop)
+
+### 1. Configure as Variáveis de Ambiente
+
+Crie um arquivo `.env` na raiz do projeto:
+
+```env
+# Database
+POSTGRES_DB=notionclone_dev
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres123
+
+# Backend
+JWT_SECRET=your-super-secret-jwt-key-change-this-in-production-min-32-chars
+JWT_REFRESH_SECRET=your-super-secret-refresh-key-change-this-too-min-32-chars
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=seu-email@gmail.com
+SMTP_PASSWORD=sua-senha-app
+
+# Frontend
+NEXT_PUBLIC_API_URL=http://localhost:8080
+NEXT_PUBLIC_WS_URL=http://localhost:8080
+```
+
+### 2. Inicie os Contêineres
+
+```bash
+# Build e inicie todos os serviços
+docker-compose up -d
+
+# Ou force o rebuild das imagens
+docker-compose up -d --build
+```
+
+Isso irá:
+- ✅ Criar e iniciar o banco PostgreSQL
+- ✅ Fazer build e iniciar o backend (Spring Boot)
+- ✅ Fazer build e iniciar o frontend (Next.js)
+- ✅ Configurar a rede entre os containers
+- ✅ Executar migrations automaticamente
+
+### 3. Acesse a Aplicação
+
+Aguarde alguns segundos para os serviços iniciarem completamente, então acesse:
+
+- **Frontend:** http://localhost:3000
+- **Backend API:** http://localhost:8080
+- **Swagger UI:** http://localhost:8080/swagger-ui.html
+- **PostgreSQL:** localhost:5432
+
+### 4. Verifique os Logs
+
+```bash
+# Todos os serviços
+docker-compose logs -f
+
+# Apenas backend
+docker-compose logs -f backend
+
+# Apenas frontend
+docker-compose logs -f frontend
+
+# Apenas database
+docker-compose logs -f postgres
+```
+
+### 5. Gerenciar os Contêineres
+
+```bash
+# Parar os serviços (sem remover)
+docker-compose stop
+
+# Iniciar serviços parados
+docker-compose start
+
+# Parar e remover contêineres
+docker-compose down
+
+# Parar, remover contêineres e volumes (⚠️ APAGA O BANCO!)
+docker-compose down -v
+
+# Reiniciar um serviço específico
+docker-compose restart backend
+
+# Ver status dos contêineres
+docker-compose ps
+```
+
+### Comandos Úteis do Docker
+
+```bash
+# Entrar no contêiner do backend (shell)
+docker-compose exec backend sh
+
+# Entrar no PostgreSQL
+docker-compose exec postgres psql -U postgres -d notionclone_dev
+
+# Executar migrations manualmente
+docker-compose exec backend ./gradlew flywayMigrate
+
+# Ver logs em tempo real
+docker-compose logs -f --tail=100
+
+# Reconstruir apenas um serviço
+docker-compose up -d --build backend
+
+# Ver uso de recursos (CPU, memória)
+docker stats
+
+# Limpar imagens não utilizadas
+docker system prune -a
+```
+
+### Troubleshooting Docker
+
+#### Porta já está em uso
+```bash
+# Windows
+netstat -ano | findstr :3000
+netstat -ano | findstr :8080
+netstat -ano | findstr :5432
+taskkill /PID <PID> /F
+
+# Linux/Mac
+lsof -i :3000
+lsof -i :8080
+lsof -i :5432
+kill -9 <PID>
+
+# Ou altere as portas no docker-compose.yml
+```
+
+#### Contêiner reiniciando constantemente
+```bash
+# Veja os logs para identificar o erro
+docker-compose logs backend
+
+# Erros comuns:
+# - Variáveis de ambiente faltando (verifique .env)
+# - Banco de dados não está pronto (aguarde 10-15 segundos)
+# - Erro nas migrations (verifique SQL)
+```
+
+#### Build muito lento
+```bash
+# Use o cache do Docker
+docker-compose build --parallel
+
+# Se persistir, limpe o cache
+docker builder prune -a
+docker-compose build --no-cache
+```
+
+#### Banco de dados não persiste
+```bash
+# Verifique os volumes
+docker volume ls
+
+# O volume deve aparecer como: notion-clone_postgres_data
+# NUNCA use: docker-compose down -v (apaga os dados!)
+```
+
+#### Erro "Cannot connect to Docker daemon"
+```bash
+# Windows/Mac: Verifique se o Docker Desktop está rodando
+
+# Linux: Inicie o serviço
+sudo systemctl start docker
+sudo systemctl enable docker
+
+# Adicione seu usuário ao grupo docker
+sudo usermod -aG docker $USER
+# Faça logout e login novamente
+```
+
+#### Erro ao fazer build do backend
+```bash
+# Limpe o cache do Gradle dentro do container
+docker-compose exec backend ./gradlew clean
+
+# Ou reconstrua do zero
+docker-compose down
+docker-compose build --no-cache backend
+docker-compose up -d
+```
+
+#### Frontend não conecta ao backend
+```bash
+# Verifique as variáveis de ambiente
+docker-compose exec frontend printenv | grep NEXT_PUBLIC
+
+# Deve mostrar:
+# NEXT_PUBLIC_API_URL=http://localhost:8080
+# NEXT_PUBLIC_WS_URL=http://localhost:8080
+
+# Se estiver errado, atualize docker-compose.yml e reinicie
+docker-compose restart frontend
+```
+
+#### Migrations não executam
+```bash
+# Execute manualmente
+docker-compose exec backend ./gradlew flywayMigrate
+
+# Se falhar, verifique o status
+docker-compose exec backend ./gradlew flywayInfo
+
+# Repare se necessário
+docker-compose exec backend ./gradlew flywayRepair
+```
+
+#### Espaço em disco esgotado
+```bash
+# Veja o uso de espaço
+docker system df
+
+# Limpe recursos não utilizados
+docker system prune -a --volumes
+
+# Cuidado: Isso remove TUDO que não está em uso
+```
+
+### Diferenças entre Desenvolvimento Local e Docker
+
+| Aspecto | Desenvolvimento Local | Docker |
+|---------|----------------------|---------|
+| **Setup inicial** | Mais complexo (instalar Node, Java, PostgreSQL) | Simples (apenas Docker) |
+| **Performance** | Melhor (nativo) | Boa (virtualização leve) |
+| **Hot Reload** | Funciona perfeitamente | Pode ter delay no frontend |
+| **Depuração** | Mais fácil (attach debugger) | Requer configuração extra |
+| **Isolamento** | Não isolado (conflitos de porta) | Totalmente isolado |
+| **Portabilidade** | Depende do SO | Funciona igual em todos os SOs |
+| **Recomendado para** | Desenvolvimento ativo | Testes, CI/CD, Produção |
+
+### Hot Reload no Docker (Desenvolvimento)
+
+Se você quiser desenvolver com Docker e ter hot reload, modifique o `docker-compose.yml`:
+
+```yaml
+# Adicione volumes para mapear o código fonte
+services:
+  backend:
+    volumes:
+      - ./backend/src:/app/src
+  
+  frontend:
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules  # Não sobrescrever node_modules
+```
+
+## 🚀 Executar o Projeto (Desenvolvimento Local)
+
+Se você **não** estiver usando Docker, siga estas instruções para executar localmente.
 
 ### Modo Desenvolvimento
 
