@@ -1,8 +1,17 @@
 # 📝 Notion Clone
 
-Um clone completo do Notion construído com tecnologias modernas e open source. Sistema de criação e gerenciamento de documentos com suporte a páginas, sub-páginas, edição WYSIWYG/Markdown e colaboração em tempo real.
+Um sistema de gestão de conhecimento corporativo construído com tecnologias modernas e open source. Diferente do Notion, focamos em **Developer Experience (DX)**, **Governança Empresarial** e **Soberania de Dados**, oferecendo funcionalidades que o Notion não pode entregar por ser SaaS fechado.
 
-> 💡 **Interessado no diferencial competitivo?** Veja nossa [Estratégia de Mercado e Comparativo com o Notion](docs/MARKET_STRATEGY.md).
+### 🎯 Por Que Usar Este Sistema ao Invés do Notion?
+
+- 💰 **30-40% mais barato** - Cobrança em Reais (BRL) com nota fiscal brasileira
+- 🔒 **Self-Hosting** - Instale no seu servidor, 100% compliance com LGPD
+- 🎨 **White Label** - Personalize com sua marca (logo, cores, domínio)
+- ⚡ **Performance** - Editor leve e rápido, sem "bloatware"
+- 🔧 **API-First** - Webhooks nativos e integrações abertas
+- 📊 **Diagramas como Código** - Mermaid.js integrado (não precisa de plugins)
+
+> 📖 **Saiba mais:** [Estratégia de Mercado](docs/MARKET_STRATEGY.md) | [Roadmap Estratégico](docs/ROADMAP_STRATEGIC.md) | [Plano de Implementação](docs/IMPLEMENTATION_PLAN.md)
 
 ## ✨ Features
 
@@ -15,6 +24,10 @@ Um clone completo do Notion construído com tecnologias modernas e open source. 
 - ✅ Blocos de comentários (info, warning, danger)
 - ✅ Hierarquia de páginas com navegação
 - ✅ Exportação para PDF (planos Pro, Team e Enterprise)
+- 🚧 **Diagramas Mermaid.js** - Flowcharts, diagramas de sequência (Q1)
+- 🚧 **Import/Export Markdown** - Lossless, CommonMark compatível (Q1)
+- 🚧 **Smart Embeds** - Figma, Google Sheets, Loom, YouTube (Q3)
+- 🚧 **Embed de PDFs** - Visualização inline com navegação (Q3)
 
 ### ✏️ Editor de Texto Rico
 
@@ -34,6 +47,8 @@ Um clone completo do Notion construído com tecnologias modernas e open source. 
 #### Paleta de Comandos
 Digite `/` para abrir a paleta de comandos:
 - `/image` → Inserir imagem
+- `/mermaid` → Diagramas como código (flowchart, sequence, gantt)
+- `/embed` → Incorporar conteúdo externo (Figma, Loom, YouTube)
 - `/info` → Bloco de informação (azul)
 - `/warning` → Bloco de aviso (amarelo)
 - `/danger` → Bloco de perigo (vermelho)
@@ -70,13 +85,18 @@ Digite `/` para abrir a paleta de comandos:
 - **Colaboração em tempo real**
 - **Compartilhar páginas com outros usuários**
 - **Edição simultânea**
+- **SSO (Single Sign-On)** - Google Workspace, Azure AD, Keycloak
+- **Webhooks** - Integração com ferramentas externas
 
 #### 🏢 Enterprise (Preço personalizado)
 - Todos os recursos do Team
-- **SSO (Single Sign-On)**
-- **Auditoria de logs**
-- **SLA de suporte**
-- **Contrato de confidencialidade**
+- **Self-Hosting (On-Premise)** - Total controle dos dados
+- **White Label** - Domínio e marca personalizados
+- **Audit Logs** - Rastreabilidade completa de ações
+- **Páginas Verificadas** - Sistema de governança de conteúdo
+- **Permissões Granulares** - Controle fino de acesso
+- **SLA de suporte** - Resposta prioritária
+- **Contrato de confidencialidade** - NDA corporativo
 
 ### 🔐 Segurança
 - ✅ Senha forte obrigatória:
@@ -91,6 +111,19 @@ Digite `/` para abrir a paleta de comandos:
 - ✅ Rate limiting
 - ✅ Validação de entrada (frontend e backend)
 - ✅ Sanitização de HTML
+- 🚧 **SSO (OpenID Connect)** - Login corporativo simplificado (Q2)
+- 🚧 **Audit Logs** - Rastreabilidade total de ações (Q2)
+- 🚧 **Permissões Granulares** - Controle fino de acesso (Q2)
+
+### 🔌 Integrações & API
+- 🚧 **Webhooks** - Notificações de eventos em tempo real (Q1)
+- 🚧 **API RESTful Completa** - Documentação Swagger/OpenAPI (Q3)
+- 🚧 **Embed Seguro** - Whitelist de domínios confiáveis (Q3)
+
+### 🏢 Governança Corporativa
+- 🚧 **Páginas Verificadas** - Sistema de validade de conteúdo (Q2)
+- 🚧 **Self-Hosting Simplificado** - Docker Compose + Helm Chart (Q3)
+- 🚧 **White Label Completo** - Marca e domínio personalizados (Q3)
 
 ### 🎯 UX
 - ✅ Onboarding na primeira utilização
@@ -277,6 +310,12 @@ pnpm start
 
 ## 📚 Documentação
 
+### Estratégia e Planejamento
+- [Estratégia de Mercado](./docs/MARKET_STRATEGY.md) - Diferenciais competitivos vs Notion
+- [Roadmap Estratégico](./docs/ROADMAP_STRATEGIC.md) - Visão de produto e prioridades
+- [Plano de Implementação](./docs/IMPLEMENTATION_PLAN.md) - Épicos, tasks e métricas
+
+### Técnica
 - [Arquitetura](./docs/ARCHITECTURE.md) - Detalhes técnicos e decisões arquiteturais
 - [Regras de Negócio](./docs/rules/) - Regras específicas de cada módulo
 - [API Documentation](http://localhost:8080/swagger-ui.html) - Swagger UI (após iniciar o backend)
@@ -810,18 +849,26 @@ Se você encontrar algum problema ou tiver dúvidas:
 
 ## 🗺️ Roadmap
 
-- [ ] Mobile app (React Native)
-- [ ] Templates de páginas
-- [ ] Versionamento de documentos
-- [ ] Importar/exportar Markdown
-- [ ] API pública
-- [ ] Webhooks
-- [ ] Integrações (Slack, Discord, etc.)
-- [ ] Pesquisa full-text
-- [ ] Comentários em páginas
-- [ ] Tabelas avançadas
-- [ ] Gráficos e visualizações
-- [ ] Modo offline
+O projeto segue um roadmap estratégico focado em **Developer Experience (DX)** e **Enterprise Governance**, diferenciando-se do Notion através de features específicas para empresas e desenvolvedores.
+
+📋 **Veja o plano completo:** [Roadmap Estratégico](docs/ROADMAP_STRATEGIC.md) | [Plano de Implementação Detalhado](docs/IMPLEMENTATION_PLAN.md)
+
+### Q1: Developer Experience
+- [ ] **Diagramas como Código** - Mermaid.js nativo
+- [ ] **Markdown Puro** - Import/Export sem perdas
+- [ ] **Webhooks** - Integrações automáticas
+- [ ] **Performance** - Otimização de carregamento
+
+### Q2: Enterprise & Governança
+- [ ] **Páginas Verificadas** - Sistema de validade de conteúdo
+- [ ] **Audit Logs** - Rastreabilidade total
+- [ ] **SSO (OIDC)** - Login corporativo
+- [ ] **Permissões Granulares** - Controle fino de acesso
+
+### Q3: Integrações Inteligentes
+- [ ] **Smart Embeds** - Figma, Google Sheets, Loom
+- [ ] **API Pública** - Documentação Swagger
+- [ ] **Self-Hosted Installer** - Docker/Helm para on-premise
 
 ---
 
