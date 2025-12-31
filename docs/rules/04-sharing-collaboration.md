@@ -1,10 +1,10 @@
 # Regras de Negócio - Compartilhamento e Colaboração
 
-## 1. Compartilhamento de Documentos (Premium)
+## 1. Compartilhamento de Documentos (Team/Enterprise)
 
 ### 1.1. Visão Geral
 
-**Requisito:** Plano Premium
+**Requisito:** Plano Team ou Enterprise
 
 **Funcionalidades:**
 - Compartilhar documentos com outros usuários
@@ -77,7 +77,7 @@ enum class SharePermission {
 **Validações:**
 1. Documento existe?
 2. Usuário é o dono?
-3. Plano do dono é Premium?
+3. Plano do dono é Team ou Enterprise?
 4. Usuários a compartilhar existem?
 5. Não compartilhar com si mesmo
 6. Não duplicar compartilhamentos
@@ -216,7 +216,7 @@ Notion Clone
 
 ---
 
-## 2. Link Público (Premium)
+## 2. Link Público (Team/Enterprise)
 
 ### 2.1. Gerar Link Público
 
@@ -348,11 +348,11 @@ data class PublicLink(
 
 ---
 
-## 3. Colaboração em Tempo Real (Premium)
+## 3. Colaboração em Tempo Real (Team/Enterprise)
 
 ### 3.1. Visão Geral
 
-**Requisito:** Plano Premium do DONO do documento
+**Requisito:** Plano Team ou Enterprise do DONO do documento
 
 **Funcionalidades:**
 - Edição simultânea
@@ -567,7 +567,8 @@ const editor = new Editor({
 **Máximo de Usuários Simultâneos:**
 - FREE: 0 (não suporta colaboração)
 - PRO: 0 (não suporta colaboração)
-- PREMIUM: 10 usuários simultâneos por documento
+- TEAM: 10 usuários simultâneos por documento
+- ENTERPRISE: 25 usuários simultâneos por documento
 
 **Se exceder:**
 - Novos usuários entram em "modo visualização apenas"
@@ -854,10 +855,10 @@ enum class AccessAction {
 {
   "error": {
     "code": "COLLABORATION_NOT_AVAILABLE",
-    "message": "Colaboração em tempo real requer plano Premium",
+    "message": "Colaboração em tempo real requer plano Team ou Enterprise",
     "details": {
       "currentPlan": "PRO",
-      "requiredPlan": "PREMIUM"
+      "requiredPlan": "TEAM"
     }
   }
 }

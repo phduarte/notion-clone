@@ -622,7 +622,8 @@ data class DocumentImage(
 **Por Plano:**
 - FREE: 100 MB
 - PRO: 1 GB
-- PREMIUM: 10 GB
+- TEAM: 5 GB
+- ENTERPRISE: 20 GB
 
 ---
 
@@ -798,7 +799,7 @@ fun searchDocuments(owner: User, query: String): List<Document>
 
 ---
 
-## 11. Histórico de Versões (Futuro - Premium)
+## 11. Histórico de Versões (Futuro - Team/Enterprise)
 
 ### 11.1. Snapshot de Versão
 

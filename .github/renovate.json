@@ -1,0 +1,70 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:base"
+  ],
+  "schedule": [
+    "every weekend"
+  ],
+  "timezone": "America/Sao_Paulo",
+  "labels": ["dependencies"],
+  "assignees": ["@me"],
+  "prConcurrentLimit": 5,
+  "prHourlyLimit": 2,
+  "packageRules": [
+    {
+      "matchDatasources": ["npm"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "frontend dependencies (non-major)",
+      "automerge": true,
+      "automergeType": "pr"
+    },
+    {
+      "matchDatasources": ["npm"],
+      "matchUpdateTypes": ["major"],
+      "groupName": "frontend dependencies (major)",
+      "automerge": false
+    },
+    {
+      "matchDatasources": ["gradle"],
+      "matchPackageNames": ["org.springframework.boot"],
+      "groupName": "Spring Boot"
+    },
+    {
+      "matchDatasources": ["gradle"],
+      "matchPackageNames": ["org.jetbrains.kotlin.*"],
+      "groupName": "Kotlin"
+    },
+    {
+      "matchPackageNames": ["next", "react", "react-dom"],
+      "groupName": "React & Next.js core",
+      "automerge": false
+    },
+    {
+      "matchPackagePatterns": ["^@tiptap/"],
+      "groupName": "Tiptap editor"
+    },
+    {
+      "matchPackagePatterns": ["^@typescript-eslint/"],
+      "groupName": "TypeScript ESLint"
+    },
+    {
+      "matchDepTypes": ["devDependencies"],
+      "automerge": true,
+      "automergeType": "pr"
+    }
+  ],
+  "vulnerabilityAlerts": {
+    "labels": ["security"],
+    "assignees": ["@me"],
+    "automerge": true
+  },
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["before 5am on monday"]
+  },
+  "docker": {
+    "enabled": true,
+    "automerge": true
+  }
+}

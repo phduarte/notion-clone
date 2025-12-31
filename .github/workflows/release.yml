@@ -1,0 +1,178 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  create-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get version from tag
+        id: version
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Version: $VERSION"
+
+      - name: Generate changelog
+        id: changelog
+        uses: mikepenz/release-changelog-builder-action@v4
+        with:
+          configuration: ".github/release-changelog-config.json"
+          failOnError: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Build backend JAR
+        run: |
+          chmod +x backend/gradlew
+          cd backend
+          ./gradlew build -x test
+          cp build/libs/*.jar ../backend-${{ steps.version.outputs.version }}.jar
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+
+      - name: Build frontend
+        run: |
+          cd frontend
+          npm ci
+          npm run build
+          tar -czf ../frontend-${{ steps.version.outputs.version }}.tar.gz .next
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: Release v${{ steps.version.outputs.version }}
+          body: |
+            ## 🚀 Notion Clone v${{ steps.version.outputs.version }}
+            
+            ### 📦 Downloads
+            - Backend JAR: `backend-${{ steps.version.outputs.version }}.jar`
+            - Frontend Build: `frontend-${{ steps.version.outputs.version }}.tar.gz`
+            
+            ### 📋 Changelog
+            ${{ steps.changelog.outputs.changelog }}
+            
+            ### 🐳 Docker Images
+            ```bash
+            docker pull ghcr.io/${{ github.repository }}/backend:v${{ steps.version.outputs.version }}
+            docker pull ghcr.io/${{ github.repository }}/frontend:v${{ steps.version.outputs.version }}
+            ```
+            
+            ### 📚 Documentation
+            - [Setup Guide](https://github.com/${{ github.repository }}/blob/main/SETUP.md)
+            - [API Documentation](https://notion-clone.com/api/docs)
+            
+            ### ⚠️ Breaking Changes
+            Check the [Migration Guide](https://github.com/${{ github.repository }}/blob/main/MIGRATION.md) for breaking changes.
+            
+            ---
+            **Full Changelog**: https://github.com/${{ github.repository }}/compare/v${{ steps.version.outputs.previous-version }}...v${{ steps.version.outputs.version }}
+          files: |
+            backend-${{ steps.version.outputs.version }}.jar
+            frontend-${{ steps.version.outputs.version }}.tar.gz
+          draft: false
+          prerelease: ${{ contains(steps.version.outputs.version, 'rc') || contains(steps.version.outputs.version, 'beta') || contains(steps.version.outputs.version, 'alpha') }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  update-documentation:
+    name: Update Documentation
+    needs: create-release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get version
+        id: version
+        run: echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Update version in files
+        run: |
+          # Update version in package.json
+          cd frontend
+          npm version ${{ steps.version.outputs.version }} --no-git-tag-version
+          
+          # Update version in build.gradle.kts
+          cd ../backend
+          sed -i "s/version = \".*\"/version = \"${{ steps.version.outputs.version }}\"/" build.gradle.kts
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          commit-message: "chore: update version to ${{ steps.version.outputs.version }}"
+          title: "chore: update version to ${{ steps.version.outputs.version }}"
+          body: |
+            Automated version update after release v${{ steps.version.outputs.version }}
+            
+            Changes:
+            - Updated frontend/package.json
+            - Updated backend/build.gradle.kts
+          branch: version-bump-${{ steps.version.outputs.version }}
+          delete-branch: true
+
+  notify:
+    name: Notify Release
+    needs: [create-release, update-documentation]
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+      - name: Get version
+        id: version
+        run: echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Notify Slack
+        uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          custom_payload: |
+            {
+              text: "🎉 New Release: Notion Clone v${{ steps.version.outputs.version }}",
+              attachments: [{
+                color: '${{ job.status }}' === 'success' ? 'good' : 'danger',
+                fields: [{
+                  title: 'Version',
+                  value: 'v${{ steps.version.outputs.version }}',
+                  short: true
+                }, {
+                  title: 'Status',
+                  value: '${{ needs.create-release.result }}',
+                  short: true
+                }, {
+                  title: 'Released by',
+                  value: '${{ github.actor }}',
+                  short: true
+                }, {
+                  title: 'Release URL',
+                  value: 'https://github.com/${{ github.repository }}/releases/tag/v${{ steps.version.outputs.version }}',
+                  short: false
+                }]
+              }]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}

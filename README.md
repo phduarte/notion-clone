@@ -12,7 +12,7 @@ Um clone completo do Notion construído com tecnologias modernas e open source. 
 - ✅ Anexar imagens (até 5MB)
 - ✅ Blocos de comentários (info, warning, danger)
 - ✅ Hierarquia de páginas com navegação
-- ✅ Exportação para PDF (planos Pro e Premium)
+- ✅ Exportação para PDF (planos Pro, Team e Enterprise)
 
 ### ✏️ Editor de Texto Rico
 
@@ -56,18 +56,25 @@ Digite `/` para abrir a paleta de comandos:
 - Editor completo
 - Auto-save
 
-#### 💼 Pro
+#### 💼 Pro (R$ 19,90/mês)
 - Até 100 páginas principais
 - Até 10 sub-páginas por página
 - Todos os recursos do Free
 - **Exportar páginas como PDF**
 
-#### 👑 Premium
+#### 👥 Team (R$ 39,90/usuário/mês)
 - Páginas e sub-páginas ilimitadas
 - Todos os recursos do Pro
 - **Colaboração em tempo real**
 - **Compartilhar páginas com outros usuários**
 - **Edição simultânea**
+
+#### 🏢 Enterprise (Preço personalizado)
+- Todos os recursos do Team
+- **SSO (Single Sign-On)**
+- **Auditoria de logs**
+- **SLA de suporte**
+- **Contrato de confidencialidade**
 
 ### 🔐 Segurança
 - ✅ Senha forte obrigatória:

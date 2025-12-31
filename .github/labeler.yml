@@ -1,0 +1,92 @@
+backend/**:
+  - backend
+  - kotlin
+  - spring-boot
+
+frontend/**:
+  - frontend
+  - nextjs
+  - react
+  - typescript
+
+docs/**:
+  - documentation
+
+.github/**:
+  - ci/cd
+  - github-actions
+
+**/*.md:
+  - documentation
+
+**/*.test.*:
+  - tests
+
+**/*.spec.*:
+  - tests
+
+backend/src/test/**:
+  - tests
+  - backend
+
+frontend/src/**/*.test.*:
+  - tests
+  - frontend
+
+docker-compose.yml:
+  - docker
+  - infrastructure
+
+Dockerfile:
+  - docker
+
+**/*.sql:
+  - database
+  - migration
+
+backend/src/**/entity/**:
+  - database
+  - backend
+
+backend/src/**/repository/**:
+  - database
+  - backend
+
+backend/src/**/service/**:
+  - business-logic
+  - backend
+
+backend/src/**/controller/**:
+  - api
+  - backend
+
+frontend/src/components/**:
+  - ui
+  - frontend
+
+frontend/src/pages/**:
+  - pages
+  - frontend
+
+frontend/src/app/**:
+  - pages
+  - frontend
+
+**/*security*/**:
+  - security
+
+**/*auth*/**:
+  - authentication
+  - security
+
+package.json:
+  - dependencies
+  - frontend
+
+build.gradle.kts:
+  - dependencies
+  - backend
+
+gradle.properties:
+  - configuration
+  - backend

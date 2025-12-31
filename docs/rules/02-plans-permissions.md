@@ -47,7 +47,7 @@ data class ProPlanLimits(
 )
 ```
 
-### 1.3. Plano PREMIUM (Ilimitado)
+### 1.3. Plano TEAM (Colaborativo)
 
 **Recursos:**
 - ✅ Páginas principais ilimitadas
@@ -61,12 +61,38 @@ data class ProPlanLimits(
 
 **Limitações:**
 ```kotlin
-data class PremiumPlanLimits(
+data class TeamPlanLimits(
     val maxMainPages: Int = Int.MAX_VALUE, // Ilimitado
     val maxSubPagesPerPage: Int = Int.MAX_VALUE,
     val canExportPdf: Boolean = true,
     val canCollaborate: Boolean = true,
     val canShare: Boolean = true
+)
+```
+
+### 1.4. Plano ENTERPRISE (Empresarial)
+
+**Recursos:**
+- ✅ Todos os recursos do TEAM
+- ✅ **SSO (Single Sign-On)** - Integração com SAML/OAuth
+- ✅ **Auditoria de Logs** - Rastreamento completo de ações
+- ✅ **SLA de Suporte** - Tempo de resposta garantido
+- ✅ **Contrato de Confidencialidade** - NDA incluído
+- ✅ **Gerenciamento de Usuários** - Admin dashboard
+- ✅ **Onboarding personalizado**
+- ✅ **Suporte dedicado**
+
+**Limitações:**
+```kotlin
+data class EnterprisePlanLimits(
+    val maxMainPages: Int = Int.MAX_VALUE, // Ilimitado
+    val maxSubPagesPerPage: Int = Int.MAX_VALUE,
+    val canExportPdf: Boolean = true,
+    val canCollaborate: Boolean = true,
+    val canShare: Boolean = true,
+    val ssoEnabled: Boolean = true,
+    val auditLogsEnabled: Boolean = true,
+    val slaSupport: Boolean = true
 )
 ```
 
@@ -78,13 +104,15 @@ data class PremiumPlanLimits(
 enum class PlanType {
     FREE,
     PRO,
-    PREMIUM;
+    TEAM,
+    ENTERPRISE;
     
     fun getLimits(): PlanLimits {
         return when(this) {
             FREE -> FreePlanLimits()
             PRO -> ProPlanLimits()
-            PREMIUM -> PremiumPlanLimits()
+            TEAM -> TeamPlanLimits()
+            ENTERPRISE -> EnterprisePlanLimits()
         }
     }
 }
@@ -153,7 +181,7 @@ fun validateCanCreateSubPage(userId: UUID, parentPageId: UUID): Boolean {
 **Validações:**
 1. Verificar plano do usuário
 2. Se FREE, negar acesso
-3. Se PRO ou PREMIUM, permitir
+3. Se PRO, TEAM ou ENTERPRISE, permitir
 
 ```kotlin
 @PreAuthorize("hasAuthority('EXPORT_PDF')")
@@ -168,7 +196,8 @@ fun getAuthoritiesByPlan(plan: PlanType): List<String> {
     return when(plan) {
         FREE -> listOf("READ", "WRITE")
         PRO -> listOf("READ", "WRITE", "EXPORT_PDF")
-        PREMIUM -> listOf("READ", "WRITE", "EXPORT_PDF", "COLLABORATE", "SHARE")
+        TEAM -> listOf("READ", "WRITE", "EXPORT_PDF", "COLLABORATE", "SHARE")
+        ENTERPRISE -> listOf("READ", "WRITE", "EXPORT_PDF", "COLLABORATE", "SHARE", "SSO", "AUDIT_LOGS")
     }
 }
 ```
@@ -178,7 +207,7 @@ fun getAuthoritiesByPlan(plan: PlanType): List<String> {
 **Endpoint**: POST /api/documents/:id/share
 
 **Validações:**
-1. Verificar se plano é PREMIUM
+1. Verificar se plano é TEAM ou ENTERPRISE
 2. Se não for, retornar erro HTTP 403
 
 ```kotlin
@@ -195,7 +224,7 @@ fun shareDocument(documentId: UUID, shareWith: List<String>): ShareResponse {
 **Validações:**
 1. Ao conectar no WebSocket de um documento
 2. Verificar plano do DONO do documento
-3. Se não for PREMIUM, rejeitar conexão
+3. Se não for TEAM ou ENTERPRISE, rejeitar conexão
 
 ```kotlin
 @MessageMapping("/document/{id}/join")
@@ -203,9 +232,9 @@ fun joinDocument(@DestinationVariable id: UUID, principal: Principal) {
     val document = documentRepository.findById(id)
     val owner = userRepository.findById(document.ownerId)
     
-    if (owner.plan != PlanType.PREMIUM) {
+    if (owner.plan != PlanType.TEAM && owner.plan != PlanType.ENTERPRISE) {
         throw AccessDeniedException(
-            "Colaboração em tempo real requer plano Premium"
+            "Colaboração em tempo real requer plano Team ou Enterprise"
         )
     }
     
@@ -240,8 +269,11 @@ fun joinDocument(@DestinationVariable id: UUID, principal: Principal) {
 
 **Regras:**
 - FREE → PRO: Permitido
-- FREE → PREMIUM: Permitido
-- PRO → PREMIUM: Permitido
+- FREE → TEAM: Permitido
+- FREE → ENTERPRISE: Permitido
+- PRO → TEAM: Permitido
+- PRO → ENTERPRISE: Permitido
+- TEAM → ENTERPRISE: Permitido
 - Upgrade é imediato após pagamento
 
 ### 4.2. Downgrade de Plano
@@ -342,16 +374,22 @@ Você atingiu o limite de 1 página principal do plano FREE.
 
 Para criar mais páginas, faça upgrade para:
 
-📦 Plano PRO - R$ 29,90/mês
+📦 Plano PRO - R$ 19,90/mês
 - Até 100 páginas principais
 - Até 10 sub-páginas por página
 - Exportar PDF
 
-💎 Plano PREMIUM - R$ 59,90/mês
+👥 Plano TEAM - R$ 39,90/usuário/mês
 - Páginas ilimitadas
 - Sub-páginas ilimitadas
 - Exportar PDF
 - Colaboração em tempo real
+
+🏢 Plano ENTERPRISE - Preço personalizado
+- Todos os recursos do Team
+- SSO (Single Sign-On)
+- Auditoria de logs
+- SLA de suporte
 
 [Ver Comparação de Planos]  [Fazer Upgrade]
 ```
@@ -363,24 +401,27 @@ Quando usuário está próximo do limite (80%):
 **Banner:**
 ```
 ⚠️ Você está usando 4 de 5 páginas principais do seu plano PRO.
-[Fazer Upgrade para Premium]
+[Fazer Upgrade para Team]
 ```
 
 ### 5.3. Página de Comparação
 
 Exibir tabela comparativa de planos:
 
-| Recurso | FREE | PRO | PREMIUM |
-|---------|------|-----|---------|
-| Páginas principais | 1 | 100 | Ilimitadas |
-| Sub-páginas por página | 3 | 10 | Ilimitadas |
-| Editor completo | ✅ | ✅ | ✅ |
-| Imagens | ✅ | ✅ | ✅ |
-| Auto-save | ✅ | ✅ | ✅ |
-| Exportar PDF | ❌ | ✅ | ✅ |
-| Compartilhar | ❌ | ❌ | ✅ |
-| Colaboração em tempo real | ❌ | ❌ | ✅ |
-| **Preço** | **Grátis** | **R$ 29,90/mês** | **R$ 59,90/mês** |
+| Recurso | FREE | PRO | TEAM | ENTERPRISE |
+|---------|------|-----|------|------------|
+| Páginas principais | 1 | 100 | Ilimitadas | Ilimitadas |
+| Sub-páginas por página | 3 | 10 | Ilimitadas | Ilimitadas |
+| Editor completo | ✅ | ✅ | ✅ | ✅ |
+| Imagens | ✅ | ✅ | ✅ | ✅ |
+| Auto-save | ✅ | ✅ | ✅ | ✅ |
+| Exportar PDF | ❌ | ✅ | ✅ | ✅ |
+| Compartilhar | ❌ | ❌ | ✅ | ✅ |
+| Colaboração em tempo real | ❌ | ❌ | ✅ | ✅ |
+| SSO (Single Sign-On) | ❌ | ❌ | ❌ | ✅ |
+| Auditoria de Logs | ❌ | ❌ | ❌ | ✅ |
+| SLA de Suporte | ❌ | ❌ | ❌ | ✅ |
+| **Preço** | **Grátis** | **R$ 19,90/mês** | **R$ 39,90/usuário/mês** | **Personalizado** |
 
 ---
 
@@ -427,12 +468,22 @@ fun getPermissionsByPlan(plan: PlanType): Set<Permission> {
     return when(plan) {
         FREE -> base
         PRO -> base + setOf(Permission.EXPORT_PDF)
-        PREMIUM -> base + setOf(
+        TEAM -> base + setOf(
             Permission.EXPORT_PDF,
             Permission.SHARE_DOCUMENT,
             Permission.VIEW_SHARED_DOCUMENT,
             Permission.EDIT_SHARED_DOCUMENT,
             Permission.COLLABORATE_REALTIME
+        )
+        ENTERPRISE -> base + setOf(
+            Permission.EXPORT_PDF,
+            Permission.SHARE_DOCUMENT,
+            Permission.VIEW_SHARED_DOCUMENT,
+            Permission.EDIT_SHARED_DOCUMENT,
+            Permission.COLLABORATE_REALTIME,
+            Permission.SSO_LOGIN,
+            Permission.VIEW_AUDIT_LOGS,
+            Permission.MANAGE_TEAM
         )
     }
 }
@@ -503,7 +554,7 @@ class PlanPermissionAspect {
   },
   "recommendations": [
     "Você está usando 80% do limite de sub-páginas na página 'Projeto X'",
-    "Considere fazer upgrade para Premium para páginas ilimitadas"
+    "Considere fazer upgrade para Team para páginas ilimitadas"
   ]
 }
 ```
@@ -517,14 +568,14 @@ class PlanPermissionAspect {
 
 ---
 
-## 8. Trial Premium
+## 8. Trial Team
 
 ### 8.1. Período de Teste
 
-**Oferecer 14 dias de trial Premium:**
+**Oferecer 14 dias de trial Team:**
 - Disponível apenas para usuários FREE ou PRO
 - Apenas 1 trial por usuário (lifetime)
-- Acesso total aos recursos Premium
+- Acesso total aos recursos Team (colaboração em tempo real)
 - Não requer cartão de crédito
 - Após expirar, retorna ao plano anterior
 

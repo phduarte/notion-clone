@@ -1,0 +1,188 @@
+name: Dependency Updates
+
+on:
+  schedule:
+    # Run every Monday at 9am UTC
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+
+jobs:
+  update-frontend:
+    name: Update Frontend Dependencies
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+
+      - name: Install npm-check-updates
+        run: npm install -g npm-check-updates
+
+      - name: Check for updates
+        id: updates
+        run: |
+          cd frontend
+          ncu -u --target minor
+          if git diff --quiet package.json; then
+            echo "has_updates=false" >> $GITHUB_OUTPUT
+          else
+            echo "has_updates=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Install dependencies
+        if: steps.updates.outputs.has_updates == 'true'
+        run: |
+          cd frontend
+          npm install
+
+      - name: Run tests
+        if: steps.updates.outputs.has_updates == 'true'
+        run: |
+          cd frontend
+          npm run lint
+          npm test -- --passWithNoTests
+          npm run build
+
+      - name: Create Pull Request
+        if: steps.updates.outputs.has_updates == 'true'
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore(deps): update frontend dependencies"
+          title: "chore(deps): update frontend dependencies"
+          body: |
+            ## 📦 Frontend Dependency Updates
+            
+            This PR updates frontend dependencies to their latest minor versions.
+            
+            ### Changes
+            - Updated npm packages to latest compatible versions
+            - All tests passed successfully
+            - Build completed without errors
+            
+            ### Testing
+            - ✅ Linting passed
+            - ✅ Type checking passed
+            - ✅ Build successful
+            
+            Please review the changes and merge if everything looks good.
+          branch: deps/frontend-updates
+          delete-branch: true
+          labels: dependencies, frontend
+
+  update-backend:
+    name: Update Backend Dependencies
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Check for updates
+        id: updates
+        run: |
+          cd backend
+          chmod +x gradlew
+          ./gradlew dependencyUpdates -Drevision=release
+          if [ -f build/dependencyUpdates/report.txt ]; then
+            echo "has_updates=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_updates=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Run tests
+        if: steps.updates.outputs.has_updates == 'true'
+        run: |
+          cd backend
+          ./gradlew test
+          ./gradlew build -x test
+
+      - name: Upload dependency report
+        if: steps.updates.outputs.has_updates == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-updates-report
+          path: backend/build/dependencyUpdates/report.txt
+
+      - name: Create issue for updates
+        if: steps.updates.outputs.has_updates == 'true'
+        uses: peter-evans/create-issue-from-file@v4
+        with:
+          title: "Backend Dependencies Available for Update"
+          content-filepath: backend/build/dependencyUpdates/report.txt
+          labels: dependencies, backend
+
+  security-audit:
+    name: Security Audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+
+      - name: Run npm audit
+        id: npm-audit
+        run: |
+          cd frontend
+          npm audit --json > audit-report.json || true
+          CRITICAL=$(jq '.metadata.vulnerabilities.critical' audit-report.json)
+          HIGH=$(jq '.metadata.vulnerabilities.high' audit-report.json)
+          echo "critical=$CRITICAL" >> $GITHUB_OUTPUT
+          echo "high=$HIGH" >> $GITHUB_OUTPUT
+
+      - name: Create security issue
+        if: steps.npm-audit.outputs.critical > 0 || steps.npm-audit.outputs.high > 0
+        uses: peter-evans/create-issue-from-file@v4
+        with:
+          title: "🚨 Security Vulnerabilities Detected"
+          content-filepath: frontend/audit-report.json
+          labels: security, urgent
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: OWASP Dependency Check
+        run: |
+          cd backend
+          chmod +x gradlew
+          ./gradlew dependencyCheckAnalyze || true
+
+      - name: Upload OWASP report
+        uses: actions/upload-artifact@v4
+        with:
+          name: owasp-report
+          path: backend/build/reports/dependency-check-report.html
+
+  renovate:
+    name: Renovate Bot
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Self-hosted Renovate
+        uses: renovatebot/github-action@v40.0.0
+        with:
+          configurationFile: .github/renovate.json
+          token: ${{ secrets.GITHUB_TOKEN }}

@@ -25,7 +25,7 @@
   - Veja regras específicas em 1.3
   
 - **Plano** (plan)
-  - Valores aceitos: FREE, PRO, PREMIUM
+  - Valores aceitos: FREE, PRO, TEAM, ENTERPRISE
   - Default: FREE se não especificado
 
 ### 1.2. Campos Opcionais
