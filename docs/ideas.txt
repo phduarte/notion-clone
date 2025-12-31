@@ -1,0 +1,90 @@
+⚠️ Crítica Construtiva: Seu Plano Free Atual
+Aqui está um problema grave na sua estratégia atual que precisamos corrigir:
+
+Notion Free: Páginas ilimitadas para uso individual.
+Seu Free Atual: 1 página e 3 sub-páginas.
+O problema: Ninguém vai usar seu sistema com esse limite. 1 página não serve nem para testar. O usuário vai criar a conta, ver o limite em 5 minutos e abandonar.
+
+Sugestão de Mudança Imediata:
+O Plano Free deve servir para viciar o usuário (Lock-in).
+
+Novo Free: Páginas ilimitadas (ou limite alto, ex: 50), mas sem colaboração e sem upload de arquivos grandes.
+O Gatilho de Venda: "Quer trabalhar com seu sócio? Pague o Team." ou "Quer subir PDFs pesados? Pague o Pro."
+Tabela Comparativa de Vendas (Pitch Deck)
+Característica	Notion Original	Seu Sistema (Notion Clone)	Argumento de Venda
+Moeda	Dólar (USD) + IOF	Real (BRL)	Previsibilidade financeira e NF local.
+Hospedagem	Cloud (EUA)	Cloud BR ou On-Premise	Compliance total com LGPD e segurança interna.
+Branding	Notion	Personalizável	Sua marca em primeiro lugar (White Label).
+Suporte	Inglês (Global)	Português (Local)	Atendimento próximo e humanizado.
+Complexidade	Alta (Muitas features)	Focada	Curva de aprendizado zero.
+Customização	Limitada	Código Aberto/API	Possibilidade de customizações sob medida (Enterprise).
+Resumo da Estratégia
+Não tente roubar o usuário hipster que usa o Notion para organizar as plantas de casa. Esse usuário ama o Notion e não vai mudar.
+
+Para tornar seu sistema irresistível para empresas e desenvolvedores, você não deve tentar copiar as "Databases" complexas do Notion (fórmulas, rollups, relações) agora. Isso é um buraco negro de desenvolvimento.
+
+Em vez disso, você deve focar em "Developer Experience" (DX) e "Corporate Governance". O argumento é: "O Notion é um brinquedo de Lego bagunçado; o nosso sistema é uma ferramenta de engenharia organizada."
+
+Aqui estão as features estratégicas para compensar a falta de funcionalidades complexas:
+
+1. Para Conquistar os Desenvolvedores (O Coração Técnico)
+Desenvolvedores odeiam quando a ferramenta "briga" com eles. Se você ganhar os devs, eles convencem o CTO a comprar.
+
+Diagramas como Código (Mermaid.js / PlantUML):
+
+O que o Notion faz: Exige integração com ferramentas externas ou imagens estáticas.
+O que você fará: Suporte nativo. O dev digita um bloco de código e o diagrama renderiza na hora.
+Valor: Documentação de arquitetura viva e versionável.
+API-First e Webhooks Reais:
+
+O que o Notion faz: API com rate limits restritos e complexa.
+O que você fará: Webhooks para tudo. "Quando uma página for criada, dispare um build no Jenkins". "Quando um status mudar, mande msg no Slack".
+Valor: Automação real sem precisar de Zapier/Make.
+Blocos de Código Executáveis (Live Code):
+
+O que o Notion faz: Apenas syntax highlighting.
+O que você fará: Permitir executar pequenos scripts (JS, Python) dentro da doc (estilo Jupyter Notebooks, mas simplificado) ou renderizar HTML/React components vivos.
+Valor: Documentação técnica interativa (Storybook dentro da doc).
+Importação/Exportação Markdown "Pura":
+
+O que o Notion faz: O Markdown do Notion é "sujo" e proprietário na exportação.
+O que você fará: Garantia de que o que entra sai. Se eu colar um MD do GitHub, ele renderiza perfeito. Se eu exportar, ele funciona no Jekyll/Hugo.
+Valor: Sem Vendor Lock-in (o maior medo dos devs).
+2. Para Conquistar as Empresas (O Bolso)
+Empresas trocam "features divertidas" por "controle e segurança".
+
+"Verified Pages" (Páginas Verificadas):
+
+O problema do Notion: Wikis ficam desatualizadas e ninguém sabe se aquela info ainda vale.
+Sua Feature: Um selo verde de "Verificado" que expira. O dono da página recebe um email a cada 3/6 meses: "Esta documentação ainda é válida?". Se não confirmar, o selo cai.
+Valor: Confiança na informação (Governança).
+Granularidade de Permissões (RBAC Real):
+
+O que o Notion faz: Permissões básicas (Full, Edit, Comment, View).
+Sua Feature: Permissões avançadas. "Pode editar o conteúdo, mas não pode mudar o título ou deletar a página". "Pode ver a página, mas não os anexos".
+Valor: Controle rígido para compliance.
+Single Sign-On (SSO) "Democrático":
+
+O que o Notion faz: Cobra uma fortuna (Plano Enterprise) para ter SSO (SAML/OIDC).
+Sua Feature: Oferecer SSO (Google Workspace, Azure AD, Keycloak) já no plano Team ou como add-on barato.
+Valor: Segurança não deveria ser artigo de luxo. Isso mata a concorrência em PMEs.
+Audit Logs Detalhados (Quem fez o quê):
+
+Sua Feature: "O usuário X exportou a página Y em PDF às 14:30". "O usuário Z deletou o parágrafo sobre salários".
+Valor: Segurança jurídica e rastreabilidade.
+3. O "Killer Feature" de Integração: Smart Embeds
+Como você não terá as Databases relacionais do Notion agora, você compensa permitindo que os dados vivam onde eles são bons, e você apenas os exibe.
+
+iFrames Seguros e Otimizados:
+Em vez de tentar recriar o Jira, permita um embed perfeito de um card do Jira.
+Em vez de recriar o Excel, permita embedar uma planilha do Google Sheets/Excel Online que seja editável dentro do seu sistema.
+Filosofia: "Não somos o lugar onde o dado nasce, somos o lugar onde o dado é explicado."
+Resumo da Troca (Trade-off)
+O que vai faltar no seu sistema (MVP)	O que você oferece em troca (Diferencial)
+Databases Relacionais Complexas	Diagramas como Código (Mermaid) e Live Code
+Milhares de Templates	Páginas Verificadas (Governança) e Validade de Conteúdo
+Notion AI	Privacidade de Dados (Self-hosted) e SSO Acessível
+Ecossistema de Plugins	Webhooks Nativos e API Aberta
+Se você entregar Velocidade + Markdown Perfeito + Segurança (Self-hosted), ninguém vai reclamar que não dá para fazer uma fórmula complexa de banco de dados. Eles usar
+
+ão o Excel para isso e colarão o link no seu sistema.

@@ -2,6 +2,8 @@
 
 Um clone completo do Notion construído com tecnologias modernas e open source. Sistema de criação e gerenciamento de documentos com suporte a páginas, sub-páginas, edição WYSIWYG/Markdown e colaboração em tempo real.
 
+> 💡 **Interessado no diferencial competitivo?** Veja nossa [Estratégia de Mercado e Comparativo com o Notion](docs/MARKET_STRATEGY.md).
+
 ## ✨ Features
 
 ### 📄 Gerenciamento de Documentos
