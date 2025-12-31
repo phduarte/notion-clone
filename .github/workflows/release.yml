@@ -82,11 +82,11 @@ jobs:
             ```
             
             ### 📚 Documentation
-            - [Setup Guide](https://github.com/${{ github.repository }}/blob/main/SETUP.md)
+            - [Setup Guide](https://github.com/${{ github.repository }}/blob/master/SETUP.md)
             - [API Documentation](https://notion-clone.com/api/docs)
             
             ### ⚠️ Breaking Changes
-            Check the [Migration Guide](https://github.com/${{ github.repository }}/blob/main/MIGRATION.md) for breaking changes.
+            Check the [Migration Guide](https://github.com/${{ github.repository }}/blob/master/MIGRATION.md) for breaking changes.
             
             ---
             **Full Changelog**: https://github.com/${{ github.repository }}/compare/v${{ steps.version.outputs.previous-version }}...v${{ steps.version.outputs.version }}

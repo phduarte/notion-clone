@@ -6,7 +6,7 @@ Este diretório contém todos os workflows de CI/CD para o projeto Notion Clone.
 
 ### 1. 🧪 CI - Build and Test (`ci.yml`)
 
-**Trigger**: Push e Pull Requests para `main` e `develop`
+**Trigger**: Push e Pull Requests para `master` e `develop`
 
 **Principais Jobs:**
 - **Backend**: 
@@ -170,7 +170,7 @@ Adicione ao README.md:
 ![CI](https://github.com/{org}/{repo}/workflows/CI%20-%20Build%20and%20Test/badge.svg)
 ![CD](https://github.com/{org}/{repo}/workflows/CD%20-%20Deploy%20to%20Production/badge.svg)
 ![Release](https://github.com/{org}/{repo}/workflows/Release/badge.svg)
-[![codecov](https://codecov.io/gh/{org}/{repo}/branch/main/graph/badge.svg)](https://codecov.io/gh/{org}/{repo})
+[![codecov](https://codecov.io/gh/{org}/{repo}/branch/master/graph/badge.svg)](https://codecov.io/gh/{org}/{repo})
 ```
 
 ---

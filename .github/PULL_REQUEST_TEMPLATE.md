@@ -165,6 +165,6 @@ NEW_VAR=value
 ---
 
 **By submitting this pull request, I confirm that:**
-- [ ] I have read and agree to the [Contributing Guidelines](../blob/main/CONTRIBUTING.md)
-- [ ] I have read and agree to the [Code of Conduct](../blob/main/CODE_OF_CONDUCT.md)
+- [ ] I have read and agree to the [Contributing Guidelines](../blob/master/CONTRIBUTING.md)
+- [ ] I have read and agree to the [Code of Conduct](../blob/master/CODE_OF_CONDUCT.md)
 - [ ] My contribution is made under the terms of the project license

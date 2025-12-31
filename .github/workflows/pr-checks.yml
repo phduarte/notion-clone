@@ -139,7 +139,7 @@ jobs:
               
               ---
               
-              Need help? Check our [Contributing Guide](../blob/main/CONTRIBUTING.md).`
+              Need help? Check our [Contributing Guide](../blob/master/CONTRIBUTING.md).`
             })
 
   size-label:
