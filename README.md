@@ -578,6 +578,7 @@ pnpm start
 ### Técnica
 - [Arquitetura](./docs/ARCHITECTURE.md) - Detalhes técnicos e decisões arquiteturais
 - [Regras de Negócio](./docs/rules/) - Regras específicas de cada módulo
+- [Troubleshooting](./docs/TROUBLESHOOTING.md) - Guia completo de solução de problemas
 - [API Documentation](http://localhost:8080/swagger-ui.html) - Swagger UI (após iniciar o backend)
 - [Copilot Instructions](./.github/copilot-instructions.md) - Guia para o GitHub Copilot
 
@@ -683,388 +684,70 @@ pnpm format               # Formata frontend com Prettier
 
 ## 🐛 Troubleshooting
 
-### Erro de conexão com o banco de dados
+Encontrando problemas? Consulte nosso **[Guia Completo de Troubleshooting](docs/TROUBLESHOOTING.md)** com soluções para:
+
+- 🗄️ **Banco de Dados** - Conexão, migrations, persistência
+- ⚙️ **Backend** - Compilação, JDK, Gradle, Hibernate
+- 🎨 **Frontend** - Next.js, hot reload, build
+- 🐳 **Docker** - Containers, volumes, rede
+- 🔌 **Conectividade** - CORS, WebSocket, portas
+- 🔐 **Segurança** - JWT, BCrypt, SMTP
+- 🧪 **Testes** - Jest, JUnit, mocks
+- 📊 **Performance** - Memória, recursos, uploads
+
+### Problemas Comuns (Quick Fix)
+
+<details>
+<summary>❌ Backend não inicia</summary>
+
 ```bash
 # Verifique se o PostgreSQL está rodando
-# Windows:
-services.msc  # Procure por PostgreSQL
-
-# Linux/Mac:
-sudo systemctl status postgresql
+# Windows: services.msc | Linux/Mac: sudo systemctl status postgresql
 
 # Teste a conexão
 psql -U postgres -d notion_clone
 ```
+</details>
 
-### Erro de porta em uso
+<details>
+<summary>❌ Frontend não conecta ao backend</summary>
+
 ```bash
-# Verifique quais portas estão em uso
-# Windows:
-netstat -ano | findstr :3000
-netstat -ano | findstr :8080
-
-# Linux/Mac:
-lsof -i :3000
-lsof -i :8080
-
-# Mate o processo ou mude a porta no application.yml
-```
-
-### Erro ao enviar emails
-- Verifique as credenciais SMTP no `.env`
-- Para Gmail, use uma "Senha de App" ([Como criar](https://support.google.com/accounts/answer/185833))
-- Ou use um serviço de email de desenvolvimento como [Mailhog](https://github.com/mailhog/MailHog)
-
-### Erro ao compilar código Kotlin
-```bash
-cd backend
-./gradlew clean build --refresh-dependencies
-```
-
-### JDK não encontrado ou versão incorreta
-```bash
-# Verifique a versão do Java instalada
-java -version
-
-# Deve ser Java 21 ou superior
-# Se não tiver, baixe em: https://www.oracle.com/java/technologies/downloads/
-
-# Windows - Configure JAVA_HOME
-setx JAVA_HOME "C:\Program Files\Java\jdk-21"
-setx PATH "%PATH%;%JAVA_HOME%\bin"
-
-# Linux/Mac - Adicione ao ~/.bashrc ou ~/.zshrc
-export JAVA_HOME=/usr/lib/jvm/java-21-openjdk
-export PATH=$JAVA_HOME/bin:$PATH
-```
-
-### Erro "Could not resolve dependencies" no Gradle
-```bash
-# Limpe o cache do Gradle
-cd backend
-./gradlew clean --refresh-dependencies
-
-# Se o problema persistir, delete o cache manualmente
-# Windows:
-rmdir /s /q %USERPROFILE%\.gradle\caches
-
-# Linux/Mac:
-rm -rf ~/.gradle/caches
-
-# Execute o build novamente
-./gradlew build
-```
-
-### Erro de permissão no gradlew (Linux/Mac)
-```bash
-# Dê permissão de execução ao gradlew
-cd backend
-chmod +x gradlew
-./gradlew bootRun
-```
-
-### Flyway migration falhou
-```bash
-# Verifique o status das migrations
-cd backend
-./gradlew flywayInfo
-
-# Se houver migration com falha, repare:
-./gradlew flywayRepair
-
-# Ou limpe tudo e reaplique (CUIDADO: apaga dados!)
-./gradlew flywayClean flywayMigrate
-```
-
-### Erro "Table already exists" ao iniciar o backend
-```bash
-# O Hibernate está tentando criar tabelas que já existem
-# Configure o application.yml para usar Flyway ao invés do Hibernate DDL:
-
-# Em application.yml, certifique-se de ter:
-spring:
-  jpa:
-    hibernate:
-      ddl-auto: validate  # Deve ser 'validate', não 'create' ou 'update'
-  flyway:
-    enabled: true
-```
-
-### Frontend não consegue conectar ao backend
-```bash
-# 1. Verifique se o backend está rodando
+# Verifique se o backend está rodando
 curl http://localhost:8080/actuator/health
 
-# 2. Verifique o arquivo .env.local do frontend
-# Deve ter:
-NEXT_PUBLIC_API_URL="http://localhost:8080"
-
-# 3. Verifique CORS no backend
-# Em SecurityConfig.kt, deve permitir origem do frontend:
-.cors().configurationSource { request ->
-    val corsConfiguration = CorsConfiguration()
-    corsConfiguration.allowedOrigins = listOf("http://localhost:3000")
-    corsConfiguration.allowedMethods = listOf("*")
-    corsConfiguration.allowedHeaders = listOf("*")
-    corsConfiguration.allowCredentials = true
-    corsConfiguration
-}
+# Verifique o .env.local
+cat frontend/.env.local
+# Deve ter: NEXT_PUBLIC_API_URL="http://localhost:8080"
 ```
+</details>
 
-### WebSocket não conecta (colaboração em tempo real)
+<details>
+<summary>❌ Porta em uso</summary>
+
 ```bash
-# 1. Verifique se o SockJS está configurado no backend
-# Em WebSocketConfig.kt:
-registry.addEndpoint("/ws/connect")
-    .setAllowedOrigins("http://localhost:3000")
-    .withSockJS()
-
-# 2. No frontend, use a URL correta:
-const socket = new SockJS('http://localhost:8080/ws/connect')
-
-# 3. Verifique firewall/antivírus que podem bloquear WebSocket
-```
-
-### Erro "Access denied" ao acessar documentos
-```bash
-# Verifique se o token JWT está sendo enviado corretamente
-
-# No frontend, em services/api.ts:
-axios.interceptors.request.use(config => {
-  const token = localStorage.getItem('accessToken')
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`
-  }
-  return config
-})
-
-# No backend, verifique se JwtAuthenticationFilter está ativo
-```
-
-### Erro ao fazer upload de imagens
-```bash
-# 1. Verifique o limite de tamanho no application.yml:
-spring:
-  servlet:
-    multipart:
-      max-file-size: 5MB
-      max-request-size: 5MB
-
-# 2. Verifique se o diretório de upload existe:
-mkdir -p ./uploads
-
-# 3. Verifique permissões da pasta (Linux/Mac):
-chmod 755 ./uploads
-
-# 4. Windows: Verifique se o antivírus não está bloqueando
-```
-
-### BCrypt "Illegal Base64 character" ao fazer login
-```bash
-# Senhas no banco devem estar hasheadas corretamente
-# Verifique se está usando BCryptPasswordEncoder com strength 10:
-
-val encoder = BCryptPasswordEncoder(10)
-val hashedPassword = encoder.encode("senha123")
-
-# Se tiver senhas em texto plano, crie um migration:
-# V999__hash_existing_passwords.sql
-```
-
-### Erro "Method Not Allowed" em requisições
-```bash
-# Verifique se o método HTTP está correto:
-# POST /api/auth/login (não GET)
-# PATCH /api/documents/:id (não PUT)
-
-# Verifique se o @RequestMapping está correto no controller:
-@PostMapping("/login")
-fun login(@RequestBody @Valid request: LoginRequest): ResponseEntity<*>
-```
-
-### Erro de CORS "No 'Access-Control-Allow-Origin' header"
-```bash
-# Configure CORS globalmente no backend
-# Em SecurityConfig.kt ou WebMvcConfig.kt:
-
-@Bean
-fun corsConfigurationSource(): CorsConfigurationSource {
-    val configuration = CorsConfiguration()
-    configuration.allowedOrigins = listOf("http://localhost:3000")
-    configuration.allowedMethods = listOf("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
-    configuration.allowedHeaders = listOf("*")
-    configuration.allowCredentials = true
-    
-    val source = UrlBasedCorsConfigurationSource()
-    source.registerCorsConfiguration("/**", configuration)
-    return source
-}
-```
-
-### Next.js "Error: EADDRINUSE: address already in use :::3000"
-```bash
-# Porta 3000 já está em uso
-
-# Encontre e mate o processo (Windows):
-netstat -ano | findstr :3000
+# Windows
+netstat -ano | findstr :8080
 taskkill /PID <PID> /F
 
-# Linux/Mac:
-lsof -ti:3000 | xargs kill -9
-
-# Ou use outra porta:
-PORT=3001 pnpm dev
+# Linux/Mac
+lsof -i :8080
+kill -9 <PID>
 ```
+</details>
 
-### Hot reload não funciona no Next.js
+<details>
+<summary>❌ Docker container reiniciando</summary>
+
 ```bash
-# 1. Verifique se está usando WSL no Windows
-# Adicione ao next.config.js:
-module.exports = {
-  webpack: (config) => {
-    config.watchOptions = {
-      poll: 1000,
-      aggregateTimeout: 300,
-    }
-    return config
-  },
-}
+# Veja os logs
+docker-compose logs backend
 
-# 2. Ou use Fast Refresh:
-# Em next.config.js:
-experimental: {
-  reactRefresh: true,
-}
+# Erros comuns: variáveis de ambiente faltando, banco não pronto
 ```
+</details>
 
-### Prisma/Hibernate não encontra entidades
-```bash
-# Certifique-se de que as entidades estão anotadas:
-@Entity
-@Table(name = "users")
-data class User(...)
-
-# E que o pacote está sendo escaneado:
-@SpringBootApplication
-@EntityScan("com.notionclone.*.entity")
-class NotionCloneApplication
-```
-
-### Erro "Cannot deserialize value" em DTOs
-```bash
-# Verifique se os DTOs têm valores default ou são nullable:
-data class CreateDocumentDto(
-    val title: String,
-    val parentId: UUID? = null,  // Nullable com default
-    val icon: String = "📄"       // Default
-)
-
-# E que tem anotações Jackson se necessário:
-@JsonProperty("parent_id")
-val parentId: UUID? = null
-```
-
-### Swagger UI não abre
-```bash
-# Verifique se SpringDoc está configurado:
-# build.gradle.kts:
-implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0")
-
-# Acesse: http://localhost:8080/swagger-ui.html
-# Ou: http://localhost:8080/v3/api-docs
-
-# Se não funcionar, verifique SecurityConfig para permitir acesso:
-.authorizeHttpRequests { auth ->
-    auth.requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
-}
-```
-
-### Testes falhando
-```bash
-# Backend - Use perfil de teste:
-# Em src/test/resources/application-test.yml:
-spring:
-  datasource:
-    url: jdbc:h2:mem:testdb
-  jpa:
-    hibernate:
-      ddl-auto: create-drop
-
-# Execute com o perfil:
-./gradlew test -Dspring.profiles.active=test
-
-# Frontend - Limpe cache do Jest:
-pnpm test --clearCache
-pnpm test
-```
-
-### Erro de memória ao buildar (OutOfMemoryError)
-```bash
-# Aumente a memória do Gradle
-# Em gradle.properties:
-org.gradle.jvmargs=-Xmx2048m -XX:MaxMetaspaceSize=512m
-
-# Ou via linha de comando:
-./gradlew build -Dorg.gradle.jvmargs="-Xmx2048m"
-```
-
-### Logs não aparecem
-```bash
-# Configure o logback no backend
-# Em src/main/resources/logback-spring.xml:
-<configuration>
-    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder>
-            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
-        </encoder>
-    </appender>
-    
-    <root level="INFO">
-        <appender-ref ref="CONSOLE" />
-    </root>
-    
-    <logger name="com.notionclone" level="DEBUG" />
-</configuration>
-```
-
-### Ainda com problemas?
-
-1. **Limpe tudo e recomece:**
-```bash
-# Backend
-cd backend
-./gradlew clean
-rm -rf build/
-./gradlew build
-
-# Frontend
-cd frontend
-rm -rf .next/
-rm -rf node_modules/
-pnpm install
-pnpm dev
-```
-
-2. **Verifique os logs detalhados:**
-```bash
-# Backend com debug
-./gradlew bootRun --debug
-
-# Frontend com verbose
-pnpm dev --verbose
-```
-
-3. **Consulte a documentação:**
-   - [Spring Boot Docs](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/)
-   - [Next.js Docs](https://nextjs.org/docs)
-   - [PostgreSQL Docs](https://www.postgresql.org/docs/)
-
-4. **Abra uma Issue:** Se o problema persistir, abra uma issue no GitHub com:
-   - Descrição detalhada do erro
-   - Logs completos
-   - Versões (Java, Node, PostgreSQL, etc.)
-   - Sistema operacional
-   - Passos para reproduzir
+➡️ **[Ver todos os problemas e soluções](docs/TROUBLESHOOTING.md)**
 
 ## 🤝 Contribuindo
 
@@ -1103,9 +786,9 @@ Desenvolvido com ❤️ como um projeto educacional.
 ## 📞 Suporte
 
 Se você encontrar algum problema ou tiver dúvidas:
-- Abra uma [Issue](https://github.com/seu-usuario/notion-clone/issues)
-- Consulte a [Documentação](./docs/)
-- Verifique o [Troubleshooting](#-troubleshooting)
+- 🐛 Consulte o [Guia de Troubleshooting](./docs/TROUBLESHOOTING.md)
+- 📚 Consulte a [Documentação](./docs/)
+- 💬 Abra uma [Issue](https://github.com/seu-usuario/notion-clone/issues)
 
 ## 🗺️ Roadmap
 
